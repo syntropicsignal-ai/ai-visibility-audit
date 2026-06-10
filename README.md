@@ -30,29 +30,12 @@ and recommended.
 ```bash
 git clone https://github.com/syntropicsignal-ai/ai-visibility-audit.git
 cd ai-visibility-audit
-docker compose up
+docker compose up -d
 ```
 
-Then open http://localhost:5173. The web app walks you through entering
-API keys on first visit — or you can load a sample dataset and explore
-the whole product with no keys at all.
-
-Migrations run automatically on container start. Keys you enter in
-setup are saved locally to `api/data/config.json` (gitignored) and
-applied to the running API immediately — no restart needed.
-
-## Deploy
-
-To run the published images instead of building from source:
-
-```bash
-curl -O https://raw.githubusercontent.com/syntropicsignal-ai/ai-visibility-audit/main/docker-compose.prod.yml
-curl -o .env https://raw.githubusercontent.com/syntropicsignal-ai/ai-visibility-audit/main/.env.example
-docker compose -f docker-compose.prod.yml up -d
-```
-
-Add your API keys to `.env` (or via the setup UI), then open
-http://localhost:8080.
+Then open http://localhost:8080 — enter your API keys on first visit, or
+load the sample dataset and explore with no keys at all. Migrations run
+automatically on start.
 
 ## What you need
 
