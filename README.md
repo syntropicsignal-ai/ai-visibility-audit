@@ -38,19 +38,19 @@ competitor share, the queries you're missing, and concrete recommendations.
 
 **Responses** — every AI answer about your category: which store gets named, recommended, and cited.
 
-![Responses](assets/responses.png)
+![Responses](https://github.com/user-attachments/assets/b9742523-853a-42ce-9279-c87c406ef710)
 
 **Dashboard** — visibility, the GEO funnel, competitor share, and the buyer queries where AI recommends someone else.
 
-![Dashboard](assets/dashboard.png)
+![Dashboard](https://github.com/user-attachments/assets/3ff5ae0a-94d7-43f4-909d-73f716ee6fc1)
 
 **Topics** — which product categories you win in AI answers, and which you're losing.
 
-![Topics](assets/topics.png)
+![Topics](https://github.com/user-attachments/assets/adaf30cf-2abc-4fd4-933a-9e7e1335a423)
 
 **Prompts** — the buyer queries being tracked, each with how often AI names your store and the trend over time.
 
-![Prompts](assets/prompts.png)
+![Prompts](https://github.com/user-attachments/assets/27a5958a-c060-4982-9bff-e47de78d1b2d)
 
 ## Quick start
 
