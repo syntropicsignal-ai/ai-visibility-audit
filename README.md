@@ -20,7 +20,9 @@ that matters in your category.
 **Audit report** — a client-ready PDF you can hand to a stakeholder: KPIs,
 competitor share, the queries you're missing, and concrete recommendations.
 
-https://github.com/user-attachments/assets/787b11b7-34e5-4901-8be5-559cfcaa3b13
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/66be8b6a-6c8f-4ee6-90a3-9626000beb6f" alt="Audit report walkthrough" width="800">
+</div>
 
 ## What one audit reveals
 
