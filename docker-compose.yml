@@ -1,3 +1,7 @@
+# Pulls the published images — no build step.
+#   docker compose up -d
+# Then open http://localhost:8080. Add API keys in .env or via the setup UI.
+
 services:
   db:
     image: postgres:16-alpine
@@ -5,8 +9,6 @@ services:
       POSTGRES_DB: ai_visibility_audit
       POSTGRES_USER: aiva
       POSTGRES_PASSWORD: aiva
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -16,38 +18,25 @@ services:
       retries: 5
 
   api:
-    build:
-      context: ./api
-      dockerfile: ../docker/api.Dockerfile
-    command: uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./api:/app
-      - /app/.venv
+    image: ghcr.io/syntropicsignal-ai/ai-visibility-audit/api:latest
     env_file:
       - path: .env
         required: false
     environment:
       DATABASE_URL: postgresql+asyncpg://aiva:aiva@db:5432/ai_visibility_audit
-      REPORT_RENDER_URL: http://web:5173
+    volumes:
+      - apidata:/app/data
     depends_on:
       db:
         condition: service_healthy
 
   web:
-    build:
-      context: ./web
-      dockerfile: ../docker/web.Dockerfile
-      target: dev
-    command: npm run dev -- --host 0.0.0.0
+    image: ghcr.io/syntropicsignal-ai/ai-visibility-audit/web:latest
     ports:
-      - "5173:5173"
-    volumes:
-      - ./web:/app
-      - /app/node_modules
-    environment:
-      VITE_API_PROXY: http://api:8000
+      - "8080:80"
+    depends_on:
+      - api
 
 volumes:
   pgdata:
+  apidata:
