@@ -1,0 +1,42 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+venv/
+
+# Node
+node_modules/
+web/dist/
+web/dist-node/
+*.tsbuildinfo
+
+# Environment
+.env
+
+# IDE / AI assistants
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.db
+backups/
+
+# Alembic
+api/alembic/versions/__pycache__/
+
+# Runtime data: WildChat embedding cache, runtime config overlay.
+api/data/
+docker-compose.local.yml
+docker-compose.demo.yml
+
+# Smoke-test output (scripts/smoke_generate_prompts.py)
+tmp/

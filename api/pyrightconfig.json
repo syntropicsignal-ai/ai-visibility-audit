@@ -1,0 +1,25 @@
+{
+  "include": ["app", "tests"],
+  "exclude": [
+    "**/__pycache__",
+    "**/.venv",
+    "alembic/versions",
+    "data"
+  ],
+  "venvPath": ".",
+  "venv": ".venv",
+  "pythonVersion": "3.12",
+  "pythonPlatform": "All",
+  "typeCheckingMode": "basic",
+  "reportMissingImports": "error",
+  "reportMissingTypeStubs": "none",
+  "reportImplicitStringConcatenation": "none",
+  "reportUnusedFunction": "none",
+  "reportUnusedImport": "warning",
+  "reportDuplicateImport": "error",
+  "reportInvalidStubStatement": "error",
+  "reportIncompatibleMethodOverride": "error",
+  "strictListInference": true,
+  "strictDictionaryInference": true,
+  "strictSetInference": true
+}

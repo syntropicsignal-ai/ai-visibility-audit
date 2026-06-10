@@ -1,0 +1,197 @@
+/*
+ * Foundation stylesheet.
+ *
+ * Inter for everything visible, JetBrains Mono for tabular data.
+ * Rounded panels (8–10px), soft cool grays, cobalt as the primary
+ * "you" color, amber for competitor accent.
+ *
+ * Tokens stay semantic (--color-bg, --color-fg, etc.) so components
+ * (sidebar, dialogs, tables, the audit report) share one source of
+ * truth. The audit report uses --font-display (Source Serif 4); the
+ * dashboard doesn't reference it.
+ */
+@layer theme, base, components, utilities;
+
+@import "tailwindcss";
+
+/* Variable fonts — self-hosted, no FOUC.
+   Source Serif 4 is kept for the audit report's display headings; the
+   dashboard shell uses Inter only. */
+@import "@fontsource-variable/source-serif-4/index.css";
+@import "@fontsource-variable/inter/index.css";
+@import "@fontsource-variable/jetbrains-mono/index.css";
+
+@theme {
+  /* ------------------------------------------------------------------
+     Color tokens — cool palette, soft neutrals.
+     ------------------------------------------------------------------ */
+
+  /* Surfaces */
+  --color-bg: #F7F8FA;          /* page tint behind panels */
+  --color-surface: #FFFFFF;     /* panels, cards, sidebar */
+  --color-surface-2: #F1F3F5;   /* hover, table stripe, code blocks */
+  --color-surface-3: #E6E8EC;   /* deeper hover, sentiment bar bg */
+
+  /* Lines */
+  --color-line: #E6E8EC;        /* default borders */
+  --color-line-strong: #15171C; /* strong rules (table heads, masthead) */
+  --color-line-soft: #EEF0F3;   /* hairlines */
+
+  /* Text */
+  --color-fg: #0A0C10;          /* ink / brand strong */
+  --color-fg-2: #4A5160;        /* secondary */
+  --color-fg-muted: #7C8493;    /* labels, hints, placeholders */
+
+  /* Accent — cobalt blue, "you" / primary */
+  --color-accent: #2B59FF;
+  --color-accent-hover: #234ADB;
+  --color-accent-active: #1B3CAF;
+  --color-accent-soft: #EAEFFF;
+  --color-accent-fg: #FFFFFF;
+
+  /* Highlight — amber, competitor accent */
+  --color-highlight: #C2410C;
+  --color-highlight-soft: #FDEBD5;
+  --color-highlight-fg: #FFFFFF;
+
+  /* Status */
+  --color-success: #117A3B;
+  --color-success-soft: #E3F4EA;
+  --color-warning: #C2410C;
+  --color-warning-soft: #FDEBD5;
+  --color-danger: #C8211C;
+  --color-danger-soft: #FDE8E7;
+  --color-info: #2B59FF;
+  --color-info-soft: #EAEFFF;
+
+  /* ------------------------------------------------------------------
+     Typography. Inter throughout for the dashboard shell. JetBrains
+     Mono for tabular numbers + identifiers. Source Serif 4 stays
+     defined for the audit report's display headings.
+     ------------------------------------------------------------------ */
+
+  --font-display: "Source Serif 4 Variable", "Charter", "Iowan Old Style", "Georgia", serif;
+  --font-sans: "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Tracking — body neutral, headings tightened slightly. */
+  --tracking-tight: -0.005em;
+  --tracking-display: -0.02em;
+  --tracking-display-tight: -0.025em;
+  --tracking-cap: 0.06em;
+
+  /* Radii. Rounded again — readable, modern SaaS. */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+
+  /* Shadows — restrained. Borders carry most of the structural work. */
+  --shadow-xs: 0 1px 1px 0 rgba(10, 12, 16, 0.04);
+  --shadow-sm: 0 1px 2px 0 rgba(10, 12, 16, 0.06);
+  --shadow-md: 0 4px 8px -2px rgba(10, 12, 16, 0.08);
+  --shadow-lg: 0 10px 20px -8px rgba(10, 12, 16, 0.12);
+
+  --ring-focus: 0 0 0 3px color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--color-line);
+  }
+
+  html {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "cv11"; /* Inter: single-storey 'a' */
+    font-variation-settings: "wght" 400;
+  }
+
+  html,
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.5;
+    letter-spacing: var(--tracking-tight);
+  }
+
+  /* Tabular numerals everywhere numbers matter */
+  .tabular-nums,
+  table,
+  code,
+  kbd,
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum", "zero";
+  }
+
+  /* Dashboard headings: Inter sans, just tighter tracking + heavier weight */
+  h1, h2, h3 {
+    font-family: var(--font-sans);
+    color: var(--color-fg);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  ::selection {
+    background: var(--color-accent-soft);
+    color: var(--color-fg);
+  }
+}
+
+@layer utilities {
+  /* Caps label — small uppercase eyebrow. Used in panel sub-headers,
+     KPI labels, sidebar group labels. 11px, tight tracking, muted. */
+  .cap {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: var(--tracking-cap);
+    text-transform: uppercase;
+    color: var(--color-fg-muted);
+  }
+
+  /* Alias of `.cap`, used by Settings, Brands, Responses, etc. */
+  .label-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: var(--tracking-cap);
+    text-transform: uppercase;
+    color: var(--color-fg-muted);
+  }
+
+  /* KPI number — 28px Inter semibold, tight tracking, tabular. */
+  .display-num {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 28px;
+    line-height: 1.1;
+    letter-spacing: var(--tracking-display-tight);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-fg);
+  }
+
+  /* Subtle muted dek under page titles. */
+  .dek {
+    color: var(--color-fg-2);
+    font-size: 13px;
+  }
+
+  .focus-ring:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+  }
+}
