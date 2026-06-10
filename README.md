@@ -1,27 +1,52 @@
 # AI Visibility Audit
 
-Track brand visibility across AI assistants (ChatGPT, Gemini, Google AI
-Mode, and Google AI Overview). Generate prompts, run them on a schedule,
-and see how often your brand and your competitors get mentioned, cited,
-and recommended.
+**See if AI recommends your store — or your competitor's.** An open-source
+audit of how your brand and products show up when shoppers ask ChatGPT,
+Gemini, Google AI Mode & Google AI Overview "best X for Y" or "where to buy Z".
+
+Built for ecommerce — works for any brand (SaaS, local, B2B).
+
+## Why this matters
+
+Shoppers increasingly ask AI assistants what to buy — and buy what gets
+recommended. AI referral traffic to online stores is growing triple-digits
+year over year. But when someone asks ChatGPT "best running shoes for flat
+feet" or "where to buy an espresso machine under $500", you can't see whether
+your store is recommended, ignored, or losing to a competitor.
+
+This tool shows you — across every major AI assistant, for every buyer query
+that matters in your category.
+
+**Audit report** — a client-ready PDF you can hand to a stakeholder: KPIs,
+competitor share, the queries you're missing, and concrete recommendations.
+
+![Audit report](assets/report.png)
+
+## What one audit reveals
+
+- Which competitor AI recommends instead of you — and for which buyer queries
+- The high-intent questions ("best…", "where to buy…") where your store is invisible
+- Which domains AI cites as sources (and which of your pages, if any)
+- Sentiment and how you're framed when your brand *is* mentioned
+- A prioritized list of what to fix first
 
 ## Screenshots
 
 > Showing the built-in sample dataset — load it in one click, no API keys required.
 
-**Responses** — every AI answer, with brand mentions, sentiment, and rank surfaced:
+**Responses** — every AI answer about your category: which store gets named, recommended, and cited.
 
 ![Responses](assets/responses.png)
 
-**Dashboard** — visibility, the GEO funnel, competitor share, and citation gaps at a glance:
+**Dashboard** — visibility, the GEO funnel, competitor share, and the buyer queries where AI recommends someone else.
 
 ![Dashboard](assets/dashboard.png)
 
-**Topics** — where you win and where you lose, grouped by theme:
+**Topics** — which product categories you win in AI answers, and which you're losing.
 
 ![Topics](assets/topics.png)
 
-**Prompts** — the queries being measured, each with hit rate, position, and trend:
+**Prompts** — the buyer queries being tracked, each with how often AI names your store and the trend over time.
 
 ![Prompts](assets/prompts.png)
 
@@ -36,6 +61,12 @@ docker compose up -d
 Then open http://localhost:8080 — enter your API keys on first visit, or
 load the sample dataset and explore with no keys at all. Migrations run
 automatically on start.
+
+## Works with any store
+
+Point it at your store URL — Shopify, WooCommerce, PrestaShop, Magento,
+BigCommerce, Medusa, Saleor, Vendure, or PL platforms like Shoper, IdoSell
+& BaseLinker. The audit runs on any brand or domain, regardless of stack.
 
 ## What you need
 
