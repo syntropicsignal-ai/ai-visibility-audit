@@ -213,7 +213,9 @@ class WildchatCorpus(Base):
     intent: Mapped[str | None] = mapped_column(String(32), nullable=True)
     length_mode: Mapped[str | None] = mapped_column(String(32), nullable=True)
     domain: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    embedding: Mapped[list[float]] = mapped_column(Vector(1536), nullable=False)  # EMBEDDING_DIM in corpus.py
+    embedding: Mapped[list[float]] = mapped_column(
+        Vector(1536), nullable=False
+    )  # EMBEDDING_DIM in corpus.py
 
 
 class GeneratorRun(Base):
