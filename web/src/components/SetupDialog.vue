@@ -20,7 +20,6 @@ interface KeyField {
 
 interface FormState {
   gemini_api_key: string;
-  openai_api_key: string;
   exa_api_key: string;
   dataforseo_login: string;
   dataforseo_password: string;
@@ -35,7 +34,7 @@ const REQUIRED_FIELDS: KeyField[] = [
     key: "gemini_api_key",
     label: "Gemini API key",
     placeholder: "AIza...",
-    hint: "Query generation and sentiment classification.",
+    hint: "Query generation, sentiment classification, and embeddings.",
     signupUrl: "https://aistudio.google.com/apikey",
   },
   {
@@ -57,16 +56,6 @@ const REQUIRED_FIELDS: KeyField[] = [
     label: "DataForSEO API password",
     placeholder: "•••••••",
     hint: "API password from the dashboard (not the account login).",
-  },
-];
-
-const OPTIONAL_FIELDS: KeyField[] = [
-  {
-    key: "openai_api_key",
-    label: "OpenAI API key",
-    placeholder: "sk-...",
-    hint: "Optional — enables the WildChat corpus stage of prompt generation (used only for embeddings).",
-    signupUrl: "https://platform.openai.com/api-keys",
   },
 ];
 
@@ -106,7 +95,6 @@ const errorMsg = ref<string | null>(null);
 
 const form = reactive<FormState>({
   gemini_api_key: "",
-  openai_api_key: "",
   exa_api_key: "",
   dataforseo_login: "",
   dataforseo_password: "",
@@ -135,12 +123,12 @@ async function save() {
   errorMsg.value = null;
   try {
     const payload: Partial<FormState> = {};
-    for (const f of [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS, ...BRIGHTDATA_FIELDS]) {
+    for (const f of [...REQUIRED_FIELDS, ...BRIGHTDATA_FIELDS]) {
       const v = form[f.key].trim();
       if (v) (payload as Record<string, string>)[f.key] = v;
     }
     status.value = await api.saveConfigKeys(payload);
-    for (const f of [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS, ...BRIGHTDATA_FIELDS]) {
+    for (const f of [...REQUIRED_FIELDS, ...BRIGHTDATA_FIELDS]) {
       if (form[f.key].trim()) form[f.key] = "";
     }
     if (!status.value.setup_required) {
@@ -248,44 +236,6 @@ onMounted(refresh);
                 v-model="form[f.key]"
                 :placeholder="isConfigured(f.key) ? '•••••••• (leave empty to keep)' : f.placeholder"
                 :type="f.key === 'dataforseo_password' || f.key.endsWith('_api_key') ? 'password' : 'text'"
-                autocomplete="off"
-              />
-              <p class="mt-1 text-xs text-[var(--color-fg-2)]">
-                {{ f.hint }}
-                <a
-                  v-if="f.signupUrl"
-                  :href="f.signupUrl"
-                  target="_blank"
-                  rel="noopener"
-                  class="inline-flex items-center gap-0.5 ml-1 text-[var(--color-accent)] hover:underline"
-                >
-                  Sign up <ExternalLink class="h-3 w-3" />
-                </a>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h3 class="text-sm font-semibold mb-1">Optional</h3>
-          <p class="text-xs text-[var(--color-fg-2)] mb-3">
-            Enhances prompt generation but isn't required to run.
-          </p>
-          <div class="space-y-3.5">
-            <div v-for="f in OPTIONAL_FIELDS" :key="f.key">
-              <label class="flex items-center justify-between text-[13px] font-medium mb-1">
-                <span>{{ f.label }}</span>
-                <span
-                  v-if="isConfigured(f.key)"
-                  class="inline-flex items-center gap-1 text-xs text-[var(--color-success)]"
-                >
-                  <CheckCircle2 class="h-3.5 w-3.5" /> configured
-                </span>
-              </label>
-              <Input
-                v-model="form[f.key]"
-                :placeholder="isConfigured(f.key) ? '•••••••• (leave empty to keep)' : f.placeholder"
-                :type="f.key.endsWith('_api_key') ? 'password' : 'text'"
                 autocomplete="off"
               />
               <p class="mt-1 text-xs text-[var(--color-fg-2)]">

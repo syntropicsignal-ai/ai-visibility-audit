@@ -13,7 +13,9 @@ dependencies = [
     "httpx>=0.28",
     "openai>=1.60",
     "exa-py>=2.11.0",
-    "datasets>=3.0",
+    "pgvector>=0.3",
+    "huggingface-hub>=0.27",
+    "pyarrow>=18",
     "playwright>=1.49",
 ]
 

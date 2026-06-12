@@ -516,9 +516,9 @@ def _chat_client() -> AsyncOpenAI:
 
 
 def _embeddings_client() -> AsyncOpenAI:
-    """Embeddings stay on OpenAI — the WildChat corpus is pre-embedded
-    with text-embedding-3-small."""
-    return AsyncOpenAI(api_key=settings.openai_api_key)
+    """Query embeddings run on Gemini's OpenAI-compatible endpoint — the
+    WildChat corpus is pre-embedded with gemini-embedding-001."""
+    return AsyncOpenAI(api_key=settings.gemini_api_key, base_url=settings.gemini_base_url)
 
 
 async def _llm_json(
@@ -1623,7 +1623,9 @@ async def generate_prompt_set(
             logger.exception("Failed to persist client_profile; continuing")
 
     # ---- Stage 4 — Keyword signals (DataForSEO Labs) ----
+    from app.database import async_session
     from app.services.corpus import EmbeddingsClient, build_category_corpus
+    from app.services.corpus_store import PgCorpusStore
 
     # Pick seed terms for PAA + suggestions: prefer ranked-keyword text
     # (real Google demand) over profile.domain_terms (LLM-extracted),
@@ -1649,7 +1651,8 @@ async def generate_prompt_set(
         seed_terms=corpus_seeds,
         location_code=location_code,
         language_code=language_code,
-        openai_client=cast(EmbeddingsClient, _embeddings_client()),
+        embeddings_client=cast(EmbeddingsClient, _embeddings_client()),
+        store=PgCorpusStore(async_session),
     )
     async with tracker.stage(
         "stage_4.signals_and_corpus",

@@ -74,8 +74,7 @@ BigCommerce, Medusa, Saleor, Vendure, or PL platforms like Shoper, IdoSell
 
 - Docker Desktop (or Docker Engine + Compose v2)
 - API keys: Gemini and Exa (prompt generation + analysis), DataForSEO
-  (Google AI Overview + keyword signals). OpenAI is optional — it only
-  powers the WildChat corpus stage of prompt generation.
+  (Google AI Overview + keyword signals).
 - Bright Data — unlocks the ChatGPT, Gemini, and Google AI Mode sources,
   the main AI assistants this tool measures. Without it you'll track
   Google AI Overview only (via DataForSEO).
