@@ -34,9 +34,7 @@ def _read_hf_parquet(dataset_name: str, language_code: str) -> list[dict]:
     from huggingface_hub import hf_hub_download
     from pyarrow import parquet as pq
 
-    path = hf_hub_download(
-        repo_id=dataset_name, filename=_HF_PARQUET_FILE, repo_type="dataset"
-    )
+    path = hf_hub_download(repo_id=dataset_name, filename=_HF_PARQUET_FILE, repo_type="dataset")
     table = pq.read_table(path, columns=list(_PARQUET_COLUMNS))
     cols = {c: table.column(c).to_pylist() for c in _PARQUET_COLUMNS}
     return [
@@ -126,7 +124,9 @@ class PgCorpusStore:
             await session.execute(text("SET LOCAL hnsw.iterative_scan = 'relaxed_order'"))
             rows = (await session.execute(stmt)).all()
         return [
-            CorpusHit(text=r.text, intent=r.intent, length_mode=r.length_mode, score=1.0 - r.distance)
+            CorpusHit(
+                text=r.text, intent=r.intent, length_mode=r.length_mode, score=1.0 - r.distance
+            )
             for r in rows
         ]
 
