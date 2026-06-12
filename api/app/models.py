@@ -1,6 +1,7 @@
 import enum
 from datetime import datetime
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -198,6 +199,21 @@ class PipelineRun(Base):
     stages: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list)
 
     generator_run_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class WildchatCorpus(Base):
+    """WildChat prompts + gemini-embedding-001 vectors backing the similarity stage."""
+
+    __tablename__ = "wildchat_corpus"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    lang: Mapped[str] = mapped_column(String(8), nullable=False, index=True)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    source: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    intent: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    length_mode: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    domain: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    embedding: Mapped[list[float]] = mapped_column(Vector(1536), nullable=False)  # EMBEDDING_DIM in corpus.py
 
 
 class GeneratorRun(Base):

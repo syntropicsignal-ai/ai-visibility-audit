@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import cast
 
 import pytest
@@ -7,30 +8,82 @@ import pytest
 from app.services import corpus
 from app.services.corpus import (
     CategoryCorpus,
+    CorpusHit,
     CorpusSample,
+    CorpusStore,
     EmbeddingsClient,
-    WildChatSample,
     build_category_corpus,
     filter_wildchat_by_relevance,
-    load_wildchat_for_language,
     select_style_exemplars,
 )
 
 
 @pytest.fixture(autouse=True)
-def _reset_cache():
-    corpus._DATASET_CACHE.clear()
-    corpus._DATASET_LOAD_LOCKS.clear()
+def _reset_style_cache():
+    corpus._STYLE_EXEMPLAR_CACHE.clear()
+    corpus._STYLE_EXEMPLAR_LOCKS.clear()
     yield
-    corpus._DATASET_CACHE.clear()
-    corpus._DATASET_LOAD_LOCKS.clear()
+    corpus._STYLE_EXEMPLAR_CACHE.clear()
+    corpus._STYLE_EXEMPLAR_LOCKS.clear()
+
+
+# --- Fakes (no mocks): a real in-memory CorpusStore + embedding client ---
+
+
+def _cosine(a: list[float], b: list[float]) -> float:
+    dot = sum(x * y for x, y in zip(a, b))
+    na = sum(x * x for x in a) ** 0.5
+    nb = sum(y * y for y in b) ** 0.5
+    return dot / (na * nb) if na and nb else 0.0
+
+
+@dataclass
+class _Row:
+    text: str
+    embedding: list[float]
+    intent: str | None = None
+    length_mode: str | None = None
+
+
+class _FakeStore:
+    """Hand-written CorpusStore: substring gate + cosine rank, in memory."""
+
+    def __init__(self, rows_by_lang: dict[str, list[_Row]]):
+        self._rows = rows_by_lang
+
+    async def ensure_loaded(self, language_code: str) -> int:
+        return len(self._rows.get(language_code.lower(), []))
+
+    async def search(self, language_code, query_vec, token_patterns, top_k) -> list[CorpusHit]:
+        hits: list[CorpusHit] = []
+        for r in self._rows.get(language_code.lower(), []):
+            low = r.text.lower()
+            if token_patterns and not any(p.strip("%") in low for p in token_patterns):
+                continue
+            hits.append(
+                CorpusHit(
+                    text=r.text,
+                    intent=r.intent,
+                    length_mode=r.length_mode,
+                    score=_cosine(query_vec, r.embedding),
+                )
+            )
+        hits.sort(key=lambda h: h.score, reverse=True)
+        return hits[:top_k]
+
+    async def texts(self, language_code: str) -> list[str]:
+        return [r.text for r in self._rows.get(language_code.lower(), [])]
+
+
+def _store(rows_by_lang: dict[str, list[_Row]]) -> CorpusStore:
+    return cast(CorpusStore, _FakeStore(rows_by_lang))
 
 
 class _FakeEmbeddings:
     def __init__(self, vector: list[float]):
         self._vector = vector
 
-    async def create(self, *, model: str, input: list[str]):
+    async def create(self, *, model: str, input: list[str], dimensions: int | None = None):
         class _Item:
             def __init__(self, vec):
                 self.embedding = vec
@@ -51,41 +104,32 @@ def _fake_client(vector: list[float]) -> EmbeddingsClient:
     return cast(EmbeddingsClient, _FakeClient(vector))
 
 
-async def test_unmapped_language_returns_empty_without_network():
-    samples, embeddings = await load_wildchat_for_language("xx")
-    assert samples == [] and embeddings == []
-    assert "xx" in corpus._DATASET_CACHE
+class _ExplodingClient:
+    """Embeddings client that fails if used — guards the short-circuit."""
+
+    @property
+    def embeddings(self):
+        raise AssertionError("embedding client must not be called")
 
 
-async def test_transient_load_failure_is_not_cached():
-    calls = {"n": 0}
-
-    def fake_sync(name: str) -> tuple[list[WildChatSample], list[list[float]]]:
-        calls["n"] += 1
-        raise RuntimeError("network glitch")
-
-    await load_wildchat_for_language("pl", loader=fake_sync)
-    await load_wildchat_for_language("pl", loader=fake_sync)
-    assert calls["n"] == 2
-    assert "pl" not in corpus._DATASET_CACHE
-
-
-async def test_filter_short_circuits_before_embedding_for_unmapped_language():
-    client = _fake_client([1.0, 0.0])
-    out = await filter_wildchat_by_relevance(client, profile_terms=["foo"], language_code="xx")
+async def test_empty_store_short_circuits_before_embedding():
+    out = await filter_wildchat_by_relevance(
+        _store({}),
+        cast(EmbeddingsClient, _ExplodingClient()),
+        profile_terms=["foo"],
+        language_code="xx",
+    )
     assert out == []
 
 
 async def test_filter_quality_gate_returns_empty_when_too_few_hits():
-    samples = [
-        WildChatSample(text="pizza margherita opinie", source="raw"),
-        WildChatSample(text="najlepsza pizza w Krakowie", source="raw"),
-        WildChatSample(text="rower elektryczny do miasta", source="raw"),
+    rows = [
+        _Row("pizza margherita opinie", [1.0, 0.0]),
+        _Row("najlepsza pizza w Krakowie", [1.0, 0.0]),
+        _Row("rower elektryczny do miasta", [0.0, 1.0]),
     ]
-    embeddings = [[1.0, 0.0], [1.0, 0.0], [0.0, 1.0]]
-    corpus._DATASET_CACHE["pl"] = (samples, embeddings)
-
     out = await filter_wildchat_by_relevance(
+        _store({"pl": rows}),
         _fake_client([1.0, 0.0]),
         profile_terms=["pizza"],
         language_code="pl",
@@ -96,17 +140,9 @@ async def test_filter_quality_gate_returns_empty_when_too_few_hits():
 
 
 async def test_filter_returns_scored_corpus_samples():
-    samples = [
-        WildChatSample(text="pizza margherita opinie", source="raw"),
-        WildChatSample(text="najlepsza pizza w Krakowie", source="raw"),
-        WildChatSample(text="restauracja pizzeria menu", source="raw"),
-        WildChatSample(text="kuchnia włoska przepisy", source="raw"),
-        WildChatSample(text="domowa pizza na cienkim cieście", source="raw"),
-    ]
-    embeddings = [[1.0, 0.0] for _ in samples]
-    corpus._DATASET_CACHE["pl"] = (samples, embeddings)
-
+    rows = [_Row(f"pizza wariant {i}", [1.0, 0.0]) for i in range(5)]
     out = await filter_wildchat_by_relevance(
+        _store({"pl": rows}),
         _fake_client([1.0, 0.0]),
         profile_terms=["pizza"],
         language_code="pl",
@@ -121,11 +157,10 @@ async def test_filter_returns_scored_corpus_samples():
 
 
 async def test_corpus_merges_wildchat_paa_and_suggestions():
-    samples = [
-        WildChatSample(text="pizza opinie", source="raw"),
-        WildChatSample(text="pizza wegańska", source="raw"),
+    rows = [
+        _Row("pizza opinie", [1.0, 0.0]),
+        _Row("pizza wegańska", [1.0, 0.0]),
     ]
-    corpus._DATASET_CACHE["pl"] = (samples, [[1.0, 0.0], [1.0, 0.0]])
 
     from app.services.dataforseo_labs import KeywordSuggestion, PaaQuestion
 
@@ -147,12 +182,14 @@ async def test_corpus_merges_wildchat_paa_and_suggestions():
         seed_terms=["pizza"],
         location_code=2616,
         language_code="pl",
-        openai_client=_fake_client([1.0, 0.0]),
+        embeddings_client=_fake_client([1.0, 0.0]),
+        store=_store({"pl": rows}),
         wildchat_top_k=10,
         paa_fetcher=_fake_paa,
         sugg_fetcher=_fake_sugg,
     )
     assert isinstance(out, CategoryCorpus)
+    # wildchat=0: both rows clear the gate but 2 < min_quality_count(10).
     assert out.counts == {
         "wildchat": 0,
         "paa": 2,
@@ -164,19 +201,16 @@ async def test_corpus_merges_wildchat_paa_and_suggestions():
 
 
 def test_style_exemplars_bucket_filter_and_cap():
-    samples = [
-        WildChatSample(text="jaki telefon kupić do 1000 zł ale nie chiński", source="raw"),
-        WildChatSample(text="gdzie kupić dobry ekspres do kawy", source="raw"),
-        WildChatSample(
-            text="Zadanie 8: przedsiębiorstwo Y, cena sprzedaży wyrobu 20 zł, koszty zmienne",
-            source="raw",
-        ),
-        WildChatSample(text="def cena(): SELECT price FROM zamowienia", source="raw"),
-        WildChatSample(text="jak wybrać rozmiar butów do biegania", source="raw"),
-        WildChatSample(text="cena?", source="raw"),
+    texts = [
+        "jaki telefon kupić do 1000 zł ale nie chiński",
+        "gdzie kupić dobry ekspres do kawy",
+        "Zadanie 8: przedsiębiorstwo Y, cena sprzedaży wyrobu 20 zł, koszty zmienne",
+        "def cena(): SELECT price FROM zamowienia",
+        "jak wybrać rozmiar butów do biegania",
+        "cena?",
     ]
 
-    out = select_style_exemplars(samples, per_intent=2)
+    out = select_style_exemplars(texts, per_intent=2)
 
     assert out["transactional"] == [
         "jaki telefon kupić do 1000 zł ale nie chiński",

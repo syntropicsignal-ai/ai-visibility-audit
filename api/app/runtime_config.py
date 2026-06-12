@@ -16,7 +16,6 @@ CONFIG_FILE = Path(__file__).resolve().parent.parent / "data" / "config.json"
 CONFIGURABLE_KEYS: frozenset[str] = frozenset(
     {
         "gemini_api_key",
-        "openai_api_key",
         "exa_api_key",
         "dataforseo_login",
         "dataforseo_password",

@@ -31,7 +31,6 @@ class ConfigStatus(BaseModel):
 
 class ConfigKeysUpdate(BaseModel):
     gemini_api_key: str | None = Field(default=None)
-    openai_api_key: str | None = Field(default=None)
     exa_api_key: str | None = Field(default=None)
     dataforseo_login: str | None = Field(default=None)
     dataforseo_password: str | None = Field(default=None)

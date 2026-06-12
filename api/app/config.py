@@ -8,14 +8,10 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://aiva:aiva@localhost:5432/ai_visibility_audit"
 
-    # Chat completions run on Gemini via its OpenAI-compatible endpoint.
+    # Chat, sentiment, and query embeddings all run on Gemini via its
+    # OpenAI-compatible endpoint.
     gemini_api_key: str = ""
     gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
-
-    # OpenAI is used only for query embeddings (the WildChat corpus is
-    # pre-embedded with text-embedding-3-small). Optional — leave blank to
-    # disable the WildChat similarity stage.
-    openai_api_key: str = ""
 
     exa_api_key: str = ""
     dataforseo_login: str = ""
