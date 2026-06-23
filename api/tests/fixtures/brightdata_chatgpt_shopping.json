@@ -1,0 +1,71 @@
+{
+  "answer_text": "Here are some solid wireless earbuds under $100 worth considering.",
+  "citations": [
+    {
+      "url": "https://www.rtings.com/headphones/reviews/best/wireless-bluetooth-earbuds-under-100"
+    }
+  ],
+  "search_sources": [
+    {
+      "url": "https://www.techradar.com/audio/earbuds-airpods/best-wireless-earbuds"
+    }
+  ],
+  "web_search_query": [
+    "best wireless earbuds under $100 2026"
+  ],
+  "shopping_visible": true,
+  "recommendations": null,
+  "shopping": [
+    {
+      "title": "TREBLAB X4 Wireless Earbuds with Earhooks",
+      "price": "MX$866.22",
+      "rating": 4.5,
+      "reviews": 12,
+      "image": "https://images.openai.com/thumbnails/url/aUKjPHicDcndEoFAGADQJ1IRY5gxppna0I-kWG7MtmWrpdbuh3gqr-NtOLfn-ykBhJrqetFQ-RJQ5D3Imr7GFBCoqEbbq67KVoiqYfPb7H9TK8wnLt1Eh5o8JLcd1DDn9YwlpIY5AsIHwTbuTscos1ZB34NzNEyTAOE6GW5Mvo_uWLUeJQTvs3pAhfKXDx_ntseR3DnjkK4QM_ACwl5nrB15vpCWl8EhtV1uvLuY_QDQWz9R",
+      "link": null,
+      "description": "Strong battery life and secure fit make it a standout option for workouts and daily use under $100.",
+      "tag": null,
+      "purchasing_options": [
+        {
+          "price_string": "MX$866.22",
+          "website": null,
+          "buy_link": null
+        }
+      ]
+    },
+    {
+      "title": "Blupebble TuneFlow Lite Wireless Bluetooth Earbuds",
+      "price": "MX$469.93",
+      "rating": null,
+      "reviews": 0,
+      "image": "https://images.openai.com/thumbnails/url/z_bNoHicDclJDoIwAADAF1VsjbIkxgAmgBTECFW8GGixYJS1ovVR_sff6Fzn-ymFaAdDUYqa9rIVBQMir2cTPohMVHRCm7sylE3bVjVfdcv_GWbIdIfuE-d4A_puC2VARKACr_EuZHwmPrQtFW3MTPOvxxGmBJ_zFwZohJLRsJJRdLIlctfxlMcHpEny3kjTLmp16u7PI4wTpC3m-J0esj7vO_JIgZU_GQcYd5T9AK0oPKg",
+      "link": null,
+      "description": "ANC, multiple microphones, and good value for commuters who want noise reduction without overspending.",
+      "tag": null,
+      "purchasing_options": [
+        {
+          "price_string": "MX$469.93",
+          "website": "https://shop.example.com/blupebble",
+          "buy_link": null
+        }
+      ]
+    },
+    {
+      "title": "PRO80 Dual-Ear Wireless TWS Bluetooth Earphone",
+      "price": "MX$240.62",
+      "rating": 4.5,
+      "reviews": 4300,
+      "image": "https://images.openai.com/thumbnails/url/XMEk_3icDcndCoIwGADQJ1JzpKUQIShZ5Fi4Mr3TqenCn-lXTp-q1-lt6tye76cC6Edb04qWDXMPRa5A1iL1MUIKNVNZ12hj1fV93T72Yvc_28G5dWDUXbk6y8SC6XXIIhoWYkHihqU_NUeOL6shQ_JtJCE3ibIEBir5CUjkzZa_Pit3YrhQvHMvVURJh_V2uvquMdfhM-ZBHgQyooTM8aQnZQULlyXbvEyEReX8ALQNP0I",
+      "link": null,
+      "description": "One of the lowest-cost true wireless options with strong user-review volume and basic everyday functionality.",
+      "tag": null,
+      "purchasing_options": [
+        {
+          "price_string": "MX$240.62",
+          "website": null,
+          "buy_link": null
+        }
+      ]
+    }
+  ]
+}

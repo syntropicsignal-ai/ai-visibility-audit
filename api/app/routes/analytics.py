@@ -24,6 +24,7 @@ from app.schemas import (
     SentimentCounts,
     GraphEdge,
     GraphNode,
+    ShoppingVisibility,
     SourceBreakdown,
     TopicCompetitor,
     TopicGraph,
@@ -42,6 +43,7 @@ from app.services.metrics import (
     self_brand_ids as _self_brand_ids,
     sentiment_counts as _sentiment_counts,
 )
+from app.services.shopping import compute_shopping_stats, product_from_row
 from app.sources import SOURCES, display_name
 
 router = APIRouter()
@@ -96,6 +98,47 @@ async def get_visibility(
     analyses = list((await db.execute(analysis_q)).scalars().all())
 
     return _metrics_from_analyses(analyses, total_responses)
+
+
+@router.get("/shopping", response_model=ShoppingVisibility)
+async def get_shopping_visibility(
+    run_id: int | None = Query(None, description="Filter by run ID"),
+    source: str | None = Query(None, description="Filter to one source id"),
+    exclude_intent: IntentType | None = Query(None, description="Exclude prompts with this intent"),
+    db: AsyncSession = Depends(get_db),
+) -> ShoppingVisibility:
+    """SKU-level visibility in AI shopping carousels: how often a carousel
+    renders, whether our products appear, and competitor share of voice."""
+    brands = list((await db.execute(select(Brand))).scalars().all())
+
+    def _scoped(stmt):
+        if run_id is not None:
+            stmt = stmt.where(Response.run_id == run_id)
+        if source is not None:
+            stmt = stmt.where(Response.source == source)
+        if exclude_intent is not None:
+            stmt = stmt.join(Prompt, Prompt.id == Response.prompt_id).where(
+                Prompt.intent != exclude_intent
+            )
+        return stmt
+
+    total_responses = (await db.execute(_scoped(select(func.count(Response.id))))).scalar() or 0
+
+    rows = (
+        (
+            await db.execute(
+                _scoped(
+                    select(Response.shopping_results).where(Response.shopping_results.is_not(None))
+                )
+            )
+        )
+        .scalars()
+        .all()
+    )
+    carousels = [[product_from_row(r) for r in (sr or [])] for sr in rows]
+    carousels = [c for c in carousels if c]
+
+    return compute_shopping_stats(carousels, total_responses, brands)
 
 
 @router.get("/runs/summary", response_model=list[RunSummary])

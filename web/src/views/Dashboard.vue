@@ -40,6 +40,7 @@ import type {
   PromptPerformance,
   PromptRecommendation,
   RunSummary,
+  ShoppingVisibility,
   SourceBreakdown,
 } from "@/api/types";
 import { pct, num, shortDate, timeAgo } from "@/lib/format";
@@ -88,6 +89,7 @@ const citations = ref<CitationStat[]>([]);
 const citationGap = ref<CitationStat[]>([]);
 const funnel = ref<FunnelMetrics | null>(null);
 const recommendations = ref<PromptRecommendation[]>([]);
+const shopping = ref<ShoppingVisibility | null>(null);
 
 const latest = computed(() => summaries.value[0] ?? null);
 const previous = computed(() => summaries.value[1] ?? null);
@@ -98,7 +100,7 @@ async function loadAll(opts: { silent?: boolean } = {}) {
   // Snapshot at call time so concurrent reloads don't cross-pollute.
   const src = selectedSource.value ?? undefined;
   try {
-    const [s, l, comp, p, cit, fn, rec, gap] = await Promise.all([
+    const [s, l, comp, p, cit, fn, rec, gap, shop] = await Promise.all([
       api.runsSummary(20, { excludeIntent: "brand", source: src }),
       // bySource is the picker — never filter it by selected source.
       api.bySource({ excludeIntent: "brand" }),
@@ -108,6 +110,7 @@ async function loadAll(opts: { silent?: boolean } = {}) {
       api.funnel({ excludeIntent: "brand", source: src }),
       api.recommendations({ limit: 8, source: src }),
       api.citationGap({ days: 30, limit: 8, source: src }),
+      api.shoppingVisibility({ source: src }),
     ]);
     summaries.value = s;
     bySource.value = l;
@@ -117,6 +120,7 @@ async function loadAll(opts: { silent?: boolean } = {}) {
     funnel.value = fn;
     recommendations.value = rec;
     citationGap.value = gap;
+    shopping.value = shop;
   } catch (e) {
     toasts.error(e instanceof ApiError ? (e.detail ?? e.message) : t("dashboard.toast.load_failed"));
   } finally {
@@ -1016,6 +1020,79 @@ onMounted(() => {
           </tr>
           <tr v-if="promptsToShow.length === 0">
             <td colspan="5" class="py-8 px-4 text-center text-[var(--color-fg-muted)] text-[13px]">{{ t("dashboard.best_worst.no_prompts") }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- AI shopping visibility -->
+    <section
+      v-if="shopping && shopping.carousel_responses > 0"
+      class="bg-[var(--color-surface)] border border-[var(--color-line)] rounded-lg overflow-hidden mt-3"
+    >
+      <header class="py-3.5 px-4 pb-2.5">
+        <p class="text-[14px] font-semibold tracking-[-0.01em]">{{ t("dashboard.shopping.title") }}</p>
+        <p class="text-[12px] text-[var(--color-fg-muted)]">
+          {{ t("dashboard.shopping.dek", { carousels: shopping.carousel_responses, total: shopping.total_responses }) }}
+        </p>
+      </header>
+
+      <div class="grid grid-cols-4 border-y border-[var(--color-line)]">
+        <div class="py-3 px-4 border-r border-[var(--color-line)]">
+          <p class="cap !text-[10.5px] !tracking-[0.04em] mb-1">{{ t("dashboard.shopping.carousel_rate") }}</p>
+          <p class="text-[18px] font-semibold tracking-[-0.01em] font-mono">{{ pct(shopping.carousel_rate, 0) }}</p>
+        </div>
+        <div class="py-3 px-4 border-r border-[var(--color-line)]">
+          <p class="cap !text-[10.5px] !tracking-[0.04em] mb-1">{{ t("dashboard.shopping.you_appear") }}</p>
+          <p
+            class="text-[18px] font-semibold tracking-[-0.01em] font-mono"
+            :class="shopping.self_appearances > 0 ? 'text-[var(--color-fg)]' : 'text-[var(--color-fg-muted)]'"
+          >{{ pct(shopping.self_appearance_rate, 0) }}</p>
+        </div>
+        <div class="py-3 px-4 border-r border-[var(--color-line)]">
+          <p class="cap !text-[10.5px] !tracking-[0.04em] mb-1">{{ t("dashboard.shopping.sov") }}</p>
+          <p class="text-[18px] font-semibold tracking-[-0.01em] font-mono">{{ pct(shopping.share_of_voice, 0) }}</p>
+        </div>
+        <div class="py-3 px-4">
+          <p class="cap !text-[10.5px] !tracking-[0.04em] mb-1">{{ t("dashboard.shopping.avg_position") }}</p>
+          <p class="text-[18px] font-semibold tracking-[-0.01em] font-mono">
+            {{ shopping.avg_self_position !== null ? shopping.avg_self_position.toFixed(1) : "—" }}
+          </p>
+        </div>
+      </div>
+
+      <table class="w-full border-collapse text-[13px]">
+        <thead>
+          <tr class="bg-[var(--color-bg)]">
+            <th class="text-left text-[11px] uppercase tracking-[0.04em] text-[var(--color-fg-muted)] font-semibold py-2.5 px-4 border-b border-[var(--color-line)]">{{ t("dashboard.shopping.col.product") }}</th>
+            <th class="text-left text-[11px] uppercase tracking-[0.04em] text-[var(--color-fg-muted)] font-semibold py-2.5 px-4 border-b border-[var(--color-line)]">{{ t("dashboard.shopping.col.brand") }}</th>
+            <th class="text-right text-[11px] uppercase tracking-[0.04em] text-[var(--color-fg-muted)] font-semibold py-2.5 px-4 border-b border-[var(--color-line)] font-mono">{{ t("dashboard.shopping.col.appearances") }}</th>
+            <th class="text-right text-[11px] uppercase tracking-[0.04em] text-[var(--color-fg-muted)] font-semibold py-2.5 px-4 border-b border-[var(--color-line)] font-mono">{{ t("dashboard.shopping.col.avg_pos") }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="p in shopping.products.slice(0, 8)"
+            :key="p.title"
+            class="hover:bg-[var(--color-bg)]"
+            :class="p.is_self ? 'bg-[var(--color-accent-soft)]' : ''"
+          >
+            <td class="py-2.5 px-4 border-b border-[var(--color-line-soft)]" style="max-width: 360px">
+              <span class="line-clamp-1">{{ p.title }}</span>
+            </td>
+            <td class="py-2.5 px-4 border-b border-[var(--color-line-soft)]">
+              <span
+                v-if="p.is_self"
+                class="inline-flex items-center py-0.5 px-2 rounded text-[11px] font-medium bg-[var(--color-accent-soft)] text-[var(--color-accent)]"
+              >{{ t("dashboard.shopping.you") }}</span>
+              <span
+                v-else-if="p.brand_name"
+                class="inline-flex items-center py-0.5 px-2 rounded text-[11px] font-medium bg-[var(--color-highlight-soft)] text-[var(--color-highlight)]"
+              >{{ p.brand_name }}</span>
+              <span v-else class="text-[var(--color-fg-muted)]">—</span>
+            </td>
+            <td class="py-2.5 px-4 border-b border-[var(--color-line-soft)] font-mono text-right">{{ p.appearances }}</td>
+            <td class="py-2.5 px-4 border-b border-[var(--color-line-soft)] font-mono text-right">{{ p.avg_position.toFixed(1) }}</td>
           </tr>
         </tbody>
       </table>
