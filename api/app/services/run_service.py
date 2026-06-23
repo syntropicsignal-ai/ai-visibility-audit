@@ -15,6 +15,7 @@ from app.models import Brand, Prompt, Response, Run, RunStatus
 from app.providers.base import GeoContext, LLMProvider, ProviderError, ProviderResponse
 from app.services.analysis import analyze_response
 from app.services.pricing import estimate_cost
+from app.services.shopping import product_to_row
 from app.sources import SOURCES, display_name
 
 logger = logging.getLogger(__name__)
@@ -135,6 +136,11 @@ async def query_source(plan: TaskPlan, provider: LLMProvider) -> TaskOutcome:
             latency_ms=result.latency_ms if result is not None else None,
             source_urls=result.source_urls if result is not None else None,
             search_queries=result.search_queries if result is not None else None,
+            shopping_results=(
+                [product_to_row(p) for p in result.shopping]
+                if result is not None and result.shopping
+                else None
+            ),
             error_kind=error_kind,
             error_message=error_message,
         )

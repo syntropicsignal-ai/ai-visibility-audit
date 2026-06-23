@@ -81,6 +81,7 @@ class Response(Base):
     latency_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
     source_urls: Mapped[list[str] | None] = mapped_column(JSONB, nullable=True)
     search_queries: Mapped[list[str] | None] = mapped_column(JSONB, nullable=True)
+    shopping_results: Mapped[list[dict] | None] = mapped_column(JSONB, nullable=True)
     error_kind: Mapped[str | None] = mapped_column(String(64), nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

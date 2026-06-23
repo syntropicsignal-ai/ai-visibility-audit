@@ -184,6 +184,18 @@
   "dashboard.best_worst.no_prompts": "Brak promptów do pokazania.",
   "dashboard.best_worst.view": "zobacz →",
 
+  "dashboard.shopping.title": "Widoczność w zakupach AI",
+  "dashboard.shopping.dek": "Karuzele produktów w {carousels} z {total} odpowiedzi",
+  "dashboard.shopping.carousel_rate": "Karuzela pokazana",
+  "dashboard.shopping.you_appear": "Twoja obecność",
+  "dashboard.shopping.sov": "Udział w głosie",
+  "dashboard.shopping.avg_position": "Śr. pozycja",
+  "dashboard.shopping.you": "TY",
+  "dashboard.shopping.col.product": "Produkt",
+  "dashboard.shopping.col.brand": "Marka",
+  "dashboard.shopping.col.appearances": "Karuzele",
+  "dashboard.shopping.col.avg_pos": "Śr. poz.",
+
   "topics.title": "Tematy",
   "topics.dek": "Gdzie wygrywasz, a gdzie tracisz — grupowane {by}.",
   "topics.by_tag": "po tagu",

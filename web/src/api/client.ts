@@ -22,6 +22,7 @@ import type {
   ResponseDetail,
   Run,
   RunSummary,
+  ShoppingVisibility,
   SourceBreakdown,
   SourceStatus,
   TopicGraph,
@@ -148,6 +149,13 @@ export const api = {
   recommendations: (opts: { threshold?: number; limit?: number; source?: string } = {}) =>
     request<PromptRecommendation[]>(
       `/analytics/recommendations${qs({ threshold: opts.threshold, limit: opts.limit, source: opts.source })}`,
+    ),
+
+  shoppingVisibility: (
+    opts: { runId?: number; source?: string; excludeIntent?: IntentType } = {},
+  ) =>
+    request<ShoppingVisibility>(
+      `/analytics/shopping${qs({ run_id: opts.runId, source: opts.source, exclude_intent: opts.excludeIntent })}`,
     ),
 
   // ----- Schedule -----

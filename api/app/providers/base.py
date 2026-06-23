@@ -21,10 +21,24 @@ class GeoContext:
 
 
 @dataclass(frozen=True, slots=True)
+class ShoppingProduct:
+    position: int
+    title: str
+    price: str | None = None
+    rating: float | None = None
+    reviews: int | None = None
+    image: str | None = None
+    link: str | None = None
+    description: str | None = None
+    tag: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class ProviderResponse:
     text: str
     source_urls: list[str] = field(default_factory=list)
     search_queries: list[str] = field(default_factory=list)
+    shopping: list[ShoppingProduct] = field(default_factory=list)
     # input/output token splits when the SDK exposes them — cost
     # estimation needs them separately, see services/pricing.py.
     tokens_used: int | None = None

@@ -110,6 +110,21 @@ export interface BrandAnalysis {
   competitors: { name: string; url: string }[] | null;
 }
 
+export interface ShoppingProduct {
+  position: number;
+  title: string;
+  price: string | null;
+  rating: number | null;
+  reviews: number | null;
+  image: string | null;
+  link: string | null;
+  description: string | null;
+  tag: string | null;
+  brand_id: number | null;
+  brand_name: string | null;
+  is_self: boolean;
+}
+
 export interface ResponseDetail {
   id: number;
   run_id: number;
@@ -123,10 +138,42 @@ export interface ResponseDetail {
   latency_ms: number | null;
   source_urls: string[] | null;
   search_queries: string[] | null;
+  shopping_products: ShoppingProduct[] | null;
   error_kind: string | null;
   error_message: string | null;
   created_at: string;
   analyses: BrandAnalysis[];
+}
+
+export interface ShoppingProductStat {
+  title: string;
+  brand_id: number | null;
+  brand_name: string | null;
+  is_self: boolean;
+  appearances: number;
+  avg_position: number;
+  best_position: number;
+  avg_rating: number | null;
+  sample_price: string | null;
+}
+
+export interface ShoppingCompetitorShare {
+  brand_id: number;
+  brand_name: string;
+  appearances: number;
+  share_of_voice: number;
+}
+
+export interface ShoppingVisibility {
+  total_responses: number;
+  carousel_responses: number;
+  carousel_rate: number;
+  self_appearances: number;
+  self_appearance_rate: number;
+  share_of_voice: number;
+  avg_self_position: number | null;
+  competitors: ShoppingCompetitorShare[];
+  products: ShoppingProductStat[];
 }
 
 export interface Run {

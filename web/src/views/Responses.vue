@@ -55,6 +55,10 @@ const search = ref("");
 
 const intents: IntentType[] = ["transactional", "informational", "comparative", "brand", "local"];
 
+function onImgError(e: Event) {
+  (e.target as HTMLImageElement).style.display = "none";
+}
+
 async function loadInitial() {
   loadingRuns.value = true;
   try {
@@ -547,7 +551,70 @@ onMounted(loadInitial);
         class="grid gap-6 py-4 px-5 overflow-auto flex-1 items-start"
         style="grid-template-columns: 1fr 280px"
       >
-        <div ref="responseBodyEl" class="prose-response" v-html="renderedDetail" />
+        <div class="min-w-0">
+          <div ref="responseBodyEl" class="prose-response" v-html="renderedDetail" />
+
+          <div v-if="selected.shopping_products && selected.shopping_products.length" class="mt-7">
+            <h4 class="cap !text-[11px] !tracking-[0.05em] mb-2.5">
+              Shopping carousel · {{ selected.shopping_products.length }} products
+            </h4>
+            <div class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+              <component
+                :is="p.link ? 'a' : 'div'"
+                v-for="p in selected.shopping_products"
+                :key="p.position"
+                :href="p.link ?? undefined"
+                :target="p.link ? '_blank' : undefined"
+                :rel="p.link ? 'noopener noreferrer' : undefined"
+                :class="[
+                  'w-[176px] shrink-0 rounded-xl border bg-[var(--color-surface)] overflow-hidden transition-shadow',
+                  p.is_self
+                    ? 'border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]'
+                    : 'border-[var(--color-line)]',
+                  p.link ? 'hover:shadow-md' : '',
+                ]"
+              >
+                <div class="relative aspect-square bg-[var(--color-surface-3)]">
+                  <img
+                    v-if="p.image"
+                    :src="p.image"
+                    alt=""
+                    loading="lazy"
+                    class="w-full h-full object-cover"
+                    @error="onImgError"
+                  />
+                  <span class="absolute top-1.5 left-1.5 font-mono text-[10px] px-1.5 py-0.5 rounded bg-black/55 text-white">#{{ p.position }}</span>
+                  <span
+                    v-if="p.is_self"
+                    class="absolute top-1.5 right-1.5 text-[9px] font-mono px-1 py-0.5 rounded bg-[var(--color-accent)] text-white"
+                  >YOU</span>
+                  <span
+                    v-else-if="p.brand_name"
+                    class="absolute top-1.5 right-1.5 text-[9px] font-medium px-1 py-0.5 rounded bg-[var(--color-highlight-soft)] text-[var(--color-highlight)] max-w-[92px] truncate"
+                  >{{ p.brand_name }}</span>
+                </div>
+                <div class="p-2.5">
+                  <p class="text-[12.5px] font-medium leading-snug line-clamp-2 min-h-[2.4em]">{{ p.title }}</p>
+                  <div class="flex items-center gap-2 mt-1.5">
+                    <span v-if="p.price" class="text-[13px] font-semibold text-[var(--color-fg)]">{{ p.price }}</span>
+                    <span v-if="p.rating" class="text-[11px] text-[var(--color-fg-muted)]">★ {{ p.rating }}<template v-if="p.reviews"> ({{ p.reviews }})</template></span>
+                  </div>
+                  <span
+                    v-if="p.tag"
+                    class="mt-1.5 inline-block text-[10px] font-medium px-1.5 py-0.5 rounded bg-[var(--color-warning-soft)] text-[var(--color-warning)]"
+                  >{{ p.tag }}</span>
+                  <p v-if="p.description" class="text-[11px] text-[var(--color-fg-2)] mt-1.5 line-clamp-3">{{ p.description }}</p>
+                  <p
+                    v-if="p.link"
+                    class="text-[10px] text-[var(--color-fg-muted)] font-mono mt-2 truncate flex items-center gap-1"
+                  >
+                    <ArrowUpRight class="h-3 w-3 shrink-0" />{{ hostname(p.link) }}
+                  </p>
+                </div>
+              </component>
+            </div>
+          </div>
+        </div>
 
         <aside class="flex flex-col gap-5 text-[12px]">
           <!-- Sources -->

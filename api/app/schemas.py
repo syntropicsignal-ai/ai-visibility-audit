@@ -330,6 +330,21 @@ class BrandAnalysis(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class ShoppingProductOut(BaseModel):
+    position: int
+    title: str
+    price: str | None = None
+    rating: float | None = None
+    reviews: int | None = None
+    image: str | None = None
+    link: str | None = None
+    description: str | None = None
+    tag: str | None = None
+    brand_id: int | None = None
+    brand_name: str | None = None
+    is_self: bool = False
+
+
 class ResponseDetail(BaseModel):
     id: int
     run_id: int
@@ -343,10 +358,44 @@ class ResponseDetail(BaseModel):
     latency_ms: int | None
     source_urls: list[str] | None
     search_queries: list[str] | None
+    shopping_products: list[ShoppingProductOut] | None = None
     error_kind: str | None
     error_message: str | None
     created_at: datetime
     analyses: list[BrandAnalysis]
+
+
+class ShoppingProductStat(BaseModel):
+    title: str
+    brand_id: int | None
+    brand_name: str | None
+    is_self: bool
+    appearances: int
+    avg_position: float
+    best_position: int
+    avg_rating: float | None
+    sample_price: str | None
+
+
+class ShoppingCompetitorShare(BaseModel):
+    brand_id: int
+    brand_name: str
+    appearances: int
+    share_of_voice: float
+
+
+class ShoppingVisibility(BaseModel):
+    # carousel_rate = how often a shopping carousel rendered at all;
+    # share_of_voice = self product slots / all tracked-brand slots.
+    total_responses: int
+    carousel_responses: int
+    carousel_rate: float
+    self_appearances: int
+    self_appearance_rate: float
+    share_of_voice: float
+    avg_self_position: float | None
+    competitors: list[ShoppingCompetitorShare]
+    products: list[ShoppingProductStat]
 
 
 # --- Query Generation ---

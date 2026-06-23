@@ -6,10 +6,37 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models import Analysis, Brand, IntentType, Response, Run
-from app.schemas import BrandAnalysis, ResponseDetail, RunOut
+from app.schemas import BrandAnalysis, ResponseDetail, RunOut, ShoppingProductOut
+from app.services.shopping import match_product_brand, product_from_row
 from app.sources import display_name
 
 router = APIRouter()
+
+
+def _serialize_shopping(resp: Response, brands: list[Brand]) -> list[ShoppingProductOut] | None:
+    if not resp.shopping_results:
+        return None
+    out: list[ShoppingProductOut] = []
+    for row in resp.shopping_results:
+        product = product_from_row(row)
+        matched = match_product_brand(product, brands)
+        out.append(
+            ShoppingProductOut(
+                position=product.position,
+                title=product.title,
+                price=product.price,
+                rating=product.rating,
+                reviews=product.reviews,
+                image=product.image,
+                link=product.link,
+                description=product.description,
+                tag=product.tag,
+                brand_id=matched.id if matched else None,
+                brand_name=matched.name if matched else None,
+                is_self=matched.is_self if matched else False,
+            )
+        )
+    return out
 
 
 class TriggerRunRequest(BaseModel):
@@ -69,10 +96,8 @@ async def list_run_responses(
 
     rows = list((await db.execute(query)).scalars().all())
 
-    self_brand_ids = {
-        b_id
-        for (b_id,) in (await db.execute(select(Brand.id).where(Brand.is_self.is_(True)))).all()
-    }
+    brands = list((await db.execute(select(Brand))).scalars().all())
+    self_brand_ids = {b.id for b in brands if b.is_self}
 
     out: list[ResponseDetail] = []
     for resp in rows:
@@ -101,6 +126,7 @@ async def list_run_responses(
                 latency_ms=resp.latency_ms,
                 source_urls=resp.source_urls,
                 search_queries=resp.search_queries,
+                shopping_products=_serialize_shopping(resp, brands),
                 error_kind=resp.error_kind,
                 error_message=resp.error_message,
                 created_at=resp.created_at,

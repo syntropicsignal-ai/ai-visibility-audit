@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import time
+from dataclasses import dataclass
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, ValidationError
@@ -14,6 +15,7 @@ from app.providers.base import (
     ProviderAuthError,
     ProviderBadResponseError,
     ProviderResponse,
+    ShoppingProduct,
 )
 
 logger = logging.getLogger(__name__)
@@ -29,13 +31,43 @@ class _SearchSource(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
 
+class _PurchasingOption(BaseModel):
+    buy_link: str | None = None
+    website: str | None = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class _ShoppingItem(BaseModel):
+    title: str | None = None
+    price: str | None = None
+    rating: float | None = None
+    reviews: int | None = None
+    image: str | None = None
+    link: str | None = None
+    description: str | None = None
+    tag: str | None = None
+    purchasing_options: list[_PurchasingOption] = []
+    model_config = ConfigDict(extra="ignore")
+
+
 class _ChatGPTRecord(BaseModel):
     answer_text: str | None = None
     citations: list[_Citation] = []
     search_sources: list[_SearchSource] = []
     web_search_query: str | list[str] | None = None
+    # The sibling `recommendations` field is always null in live data
+    # despite the docs; `shopping` is the real carousel.
+    shopping: list[_ShoppingItem] = []
     error: str | None = None
     model_config = ConfigDict(extra="ignore")
+
+
+@dataclass(frozen=True, slots=True)
+class _Extracted:
+    text: str
+    source_urls: list[str]
+    search_queries: list[str]
+    shopping: list[ShoppingProduct]
 
 
 class BrightDataChatGPTProvider(LLMProvider):
@@ -73,11 +105,12 @@ class BrightDataChatGPTProvider(LLMProvider):
         )
         latency_ms = int((time.perf_counter() - start) * 1000)
 
-        text, source_urls, search_queries = _extract_fields(record)
+        extracted = _extract_fields(record)
         return ProviderResponse(
-            text=text,
-            source_urls=_brightdata.dedupe(source_urls),
-            search_queries=search_queries,
+            text=extracted.text,
+            source_urls=_brightdata.dedupe(extracted.source_urls),
+            search_queries=extracted.search_queries,
+            shopping=extracted.shopping,
             tokens_used=None,
             input_tokens=None,
             output_tokens=None,
@@ -85,7 +118,16 @@ class BrightDataChatGPTProvider(LLMProvider):
         )
 
 
-def _extract_fields(record: dict[str, Any]) -> tuple[str, list[str], list[str]]:
+def _first_buy_link(options: list[_PurchasingOption]) -> str | None:
+    for opt in options:
+        if opt.buy_link:
+            return opt.buy_link
+        if opt.website:
+            return opt.website
+    return None
+
+
+def _extract_fields(record: dict[str, Any]) -> _Extracted:
     try:
         parsed = _ChatGPTRecord.model_validate(record)
     except ValidationError as e:
@@ -106,4 +148,22 @@ def _extract_fields(record: dict[str, Any]) -> tuple[str, list[str], list[str]]:
     elif isinstance(wsq, list):
         search_queries.extend(q for q in wsq if isinstance(q, str) and q.strip())
 
-    return parsed.answer_text, source_urls, search_queries
+    shopping: list[ShoppingProduct] = []
+    for position, item in enumerate(parsed.shopping, start=1):
+        if not item.title or not item.title.strip():
+            continue
+        shopping.append(
+            ShoppingProduct(
+                position=position,
+                title=item.title.strip(),
+                price=item.price,
+                rating=item.rating,
+                reviews=item.reviews,
+                image=item.image,
+                link=item.link or _first_buy_link(item.purchasing_options),
+                description=item.description,
+                tag=item.tag,
+            )
+        )
+
+    return _Extracted(parsed.answer_text, source_urls, search_queries, shopping)
