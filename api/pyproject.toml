@@ -1,6 +1,6 @@
 [project]
 name = "ai-visibility-audit-api"
-version = "0.2.0"
+version = "0.3.0"
 description = "AI Visibility Audit API — track brand visibility across AI assistants"
 requires-python = ">=3.12"
 dependencies = [
