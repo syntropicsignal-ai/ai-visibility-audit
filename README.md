@@ -64,6 +64,22 @@ Then open http://localhost:8080 — enter your API keys on first visit, or
 load the sample dataset and explore with no keys at all. Migrations run
 automatically on start.
 
+## Verifying the images
+
+The published images are built by GitHub Actions and signed keylessly with
+[cosign](https://github.com/sigstore/cosign). Confirm an image came from this
+repo's release workflow — not a tamperer or typosquatter — before running it:
+
+```bash
+cosign verify ghcr.io/syntropicsignal-ai/ai-visibility-audit/api:latest \
+  --certificate-identity-regexp '^https://github.com/syntropicsignal-ai/ai-visibility-audit/.github/workflows/release.yml@refs/tags/v.*$' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
+Each image also ships a build-provenance attestation and an SBOM, inspectable
+with `docker buildx imagetools inspect`. The api image runs as an
+unprivileged user.
+
 ## Works with any store
 
 Point it at your store URL — Shopify, WooCommerce, PrestaShop, Magento,
