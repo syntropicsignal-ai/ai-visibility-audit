@@ -1,4 +1,4 @@
-FROM node:22-alpine AS dev
+FROM --platform=$BUILDPLATFORM node:22-alpine AS dev
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
