@@ -1,5 +1,9 @@
 # AI Visibility Audit
 
+[![CI](https://github.com/syntropicsignal-ai/ai-visibility-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/syntropicsignal-ai/ai-visibility-audit/actions/workflows/ci.yml)
+[![Image scan](https://github.com/syntropicsignal-ai/ai-visibility-audit/actions/workflows/security-scan.yml/badge.svg)](https://github.com/syntropicsignal-ai/ai-visibility-audit/actions/workflows/security-scan.yml)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+
 **See if AI recommends your store — or your competitor's.** An open-source
 audit of how your brand and products show up when shoppers ask ChatGPT,
 Gemini, Google AI Mode & Google AI Overview "best X for Y" or "where to buy Z".
